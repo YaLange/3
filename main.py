@@ -1,33 +1,36 @@
-def count_lines(file_name):
-    with open(file_name, 'r') as file:
-        return sum(1 for line in file)
+import os
 
-def merge_files(file1, file2, result_file):
-    def write_file_info(file, lines):
-        with open(result_file, 'a') as result:
+def get_txt_files(directory):
+    txt_files = []
+    files = os.listdir(directory)
+    for file in files:
+        if file.endswith(".txt"):
+            txt_files.append(file)
+    return txt_files
+
+def read_file(filename):
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+        return len(lines), ''.join(lines)
+
+def merge_files(directory, result_file):
+    file_data = {}
+    txt_files = get_txt_files(directory)
+
+    for file in txt_files:
+        path = os.path.join(directory, file)
+        lines, text = read_file(path)
+        file_data[file] = (lines, text)
+    
+    sorted_files = sorted(file_data.items(), key=lambda x: x[1][0])
+
+    with open(result_file, 'w') as result:
+        for file, (lines, text) in sorted_files:
             result.write(file + '\n')
             result.write(str(lines) + '\n')
+            result.write(text + '\n')
 
-    file1_lines = count_lines(file1)
-    file2_lines = count_lines(file2)
-
-    if file1_lines < file2_lines:
-        write_file_info(file1, file1_lines)
-        with open(file1, 'r') as f1, open(result_file, 'a') as result:
-            result.write(f1.read() + '\n')
-        write_file_info(file2, file2_lines)
-        with open(file2, 'r') as f2, open(result_file, 'a') as result:
-            result.write(f2.read())
-    else:
-        write_file_info(file2, file2_lines)
-        with open(file2, 'r') as f2, open(result_file, 'a') as result:
-            result.write(f2.read() + '\n')
-        write_file_info(file1, file1_lines)
-        with open(file1, 'r') as f1, open(result_file, 'a') as result:
-            result.write(f1.read())
-
-file1 = '1.txt'
-file2 = '2.txt'
+directory = '.'  # Укажите путь к папке, содержащей файлы
 result_file = '3.txt'
 
-merge_files(file1, file2, result_file)
+merge_files(directory, result_file)
